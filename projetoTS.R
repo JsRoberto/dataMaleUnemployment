@@ -26,17 +26,18 @@ Z <<- ts(dataMU, start = c(1948,1), frequency = 12)
 #Além disso, outros parâmetros também são gerados, ligados diretamente aos "anos.prev",
 #que indica quantos anos finais da série a modelagem tentará prever.
 MMQz <- function(Z, pol.order, anos.prev) {
+      #Abaixo, são calculados os parâmetros que irão indicar qual subconjunto de "Z" será
+      #utilizado na modelagem e qual seré utilizdo para previsão.
       idx1 <<- 1
       idx2 <<- length(Z)-12*anos.prev
       idx3 <<- length(Z)
       ap <<- anos.prev
       Zoriginal1 <- Z[idx1:idx2]
       Zoriginal2 <- Z[(idx2+1):idx3]
-      #Parâmetros da série temporal Z(t) e de seu aproximação polinomial T(t)
-      N <- length(Zoriginal1) #número de amostras
-      anos <- N/12 #quantidade de anos de observação
+      N <- length(Zoriginal1) 
+      anos <- N/12
       
-      #Obtenção das matrizes mT1 e mT2
+      #Obtenção das matrizes "mT1" e "mT2".
       matrixT <- function(inc, fim, pol.order) {
             expp <<- NULL
             #A função "lst2vct()" transforma uma lista de vetores em um único vetor
@@ -59,33 +60,38 @@ MMQz <- function(Z, pol.order, anos.prev) {
       mT1 <- matrixT(idx1, idx2, pol.order)
       mT2 <- matrixT(idx2 + 1, idx3, pol.order)
       
-      #Obtenção da matrix mD
+      #Obtenção das matrizes "mD1" e "mD2".
       mD1 <- mD2 <- mDaux <- rbind(diag(rep(1,11)), rep(-1,11))
       for(i in 1:(anos-1)) mD1 <- rbind(mD1,mDaux)
       for(i in 1:(anos.prev-1)) mD2 <- rbind(mD2,mDaux)
       
-      #Obtenção da matriz X e da estimador de mínimos quadrados gamma
+      #Obtenção da matriz "X" e da estimador de mínimos quadrados "gamma".
       X <- cbind(mT1, mD1)
       gamma <- chol2inv(chol(t(X)%*%X))%*%t(X)%*%Zoriginal1
       beta <- gamma[1:(pol.order+1)]
       alpha <- gamma[-(1:(pol.order+1))]
       
+      #Os dados que serão armazenados em "dataMU" possuem tamanhos diferentes, por isso
+      #precisam ser preenchidos por missing values ou NAs.
       Zprevisto <- mT2%*%beta + mD2%*%alpha
       Zprevisto <- c(rep(NA, N), Zprevisto)
-      
       Zoriginal1 <- c(Zoriginal1, rep(NA, anos.prev*12))
       Zoriginal2 <- c(rep(NA, N), Zoriginal2)
-      #Obtenção da série estimada Zest, da tendência Tt, da sazonalidade determinística
-      #St e do resíduo at.
+
+      #Obtenção da série estimada "Zest", da tendência polinomial "Tt", da sazonalidade
+      #determinística "St" e do resíduo "at".
       Zestimado <- c(X%*%gamma, rep(NA, anos.prev*12))
       Tt <- c(mT1%*%beta, rep(NA, anos.prev*12))
       St <- c(mD1%*%alpha, rep(NA, anos.prev*12))
       at <- Zoriginal1 - Zestimado
+      
+      #Finalmente, os dados são armazenados no data frame "dataMU". 
       dataMU <<- data.frame(Zorg1 = Zoriginal1, Zorg2 = Zoriginal2,
                             Zest = Zestimado, Zprev = Zprevisto,
                             Tt = Tt, St = St, at = at, t = 1:length(Z))
 }
 
+#A função "plotz()"
 plotz <- function() {
       #o código terá problema se "ap" for ímpar! 
       if (ap%%2==1) i <- 1 else i <- 0
