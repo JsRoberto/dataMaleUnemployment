@@ -158,29 +158,32 @@ plotz <- function() {
              mytheme
 }
 
-MEQ <- function() {
-      erro <- dataAirPassengers$Zorg2 - dataAirPassengers$Zprev
+#A função "EMQ()" aplica o erro quadrático médio ao erro normalizado entre a série 
+#original "Zorg2" e a série de previsão "Zprev". 
+EQM <- function() {
+      erro <- dataMU$Zorg2 - dataMU$Zprev
       erro.normalizado <- erro/max(sqrt(erro^2), na.rm = TRUE)
       mse <- mean(erro.normalizado^2, na.rm = TRUE)
       mse
 }
-#Aplicação de uma tendência linear (polinômio do 1º grau ou m = 1)
-zest(Z, 1, 2)
+
+##########################################################################################
+#Aplicação de uma tendência linear (pol.order = 1) e previsão para 2 anos (anos.prev = 2).
+MMQz(Z, 1, 2)
 plotz()
-MEQ()
+EQM()
 p1; p2; p3; p4
 
-#Aplicação de uma tendência quadrática (polinômio do 2º grau ou m = 2)
-zest(Z, 2, 2)
+#Aplicação de uma tendência quadrática (pol.order = 2) e previsão para 3 anos (anos.prev =
+#3).
+MMQz(Z, 2, 3)
 plotz()
-MEQ()
+EQM()
 p1; p2; p3; p4
 
-#Aplicação de uma tendência de polinômio do 4º grau ou m = 4
-zest(Z, 4, 2)
+#Aplicação de uma tendência de polinômio do 5º grau (pol.order = 5) e previsão para 3 anos
+#(anos.prev = 3).
+MMQz(Z, 5, 3)
 plotZ()
-MEQ()
+EQM()
 p1; p2; p3; p4
-
-################3
-
